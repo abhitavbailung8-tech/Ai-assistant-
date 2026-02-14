@@ -254,5 +254,35 @@
             window.speechSynthesis.speak(utter);
         }
     </script>
+<body>
+
+  <!-- Tumhara content -->
+
+  <input id="userInput" type="text" placeholder="Type message">
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    async function sendMessage() {
+
+      const input = document.getElementById("userInput");
+      const userMessage = input.value;
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: "user", content: userMessage }
+          ]
+        })
+      });
+
+      const data = await response.json();
+      alert(data.choices[0].message.content);
+    }
+  </script>
+
 </body>
-</html>
+</html> 
