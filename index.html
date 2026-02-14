@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Mireya - Created by Abhinav</title>
+    <title>AI Mireya - Mega Brain Edition</title>
     <style>
         :root { --neon: #ff66aa; --bg: #050505; }
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
@@ -27,9 +27,7 @@
 </head>
 <body onclick="enableAudio()">
 
-    <audio id="bg-music">
-        <source src="baney.mp3" type="audio/mpeg">
-    </audio>
+    <audio id="bg-music"></audio>
 
     <div id="video-section">
         <video id="idle-video" class="character-video" autoplay loop muted playsinline><source src="girl.mp4" type="video/mp4"></video>
@@ -55,12 +53,14 @@
         const playlist = ["baney.mp3", "meu2.mp3"];
         let currentTrack = 0;
 
-        music.onended = function() {
-            currentTrack = (currentTrack + 1) % playlist.length;
+        function playNext() {
             music.src = playlist[currentTrack];
             music.volume = 0.15;
-            music.play();
-        };
+            music.play().catch(e => console.log("Playback blocked"));
+            currentTrack = (currentTrack + 1) % playlist.length;
+        }
+
+        music.addEventListener('ended', playNext);
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
@@ -73,7 +73,6 @@
         }
 
         window.onload = () => {
-            // Mireya Intro Update
             setTimeout(() => { 
                 const intro = "Hi!👋";
                 typeWriter(intro, "ai"); 
@@ -81,13 +80,7 @@
             }, 800);
         };
 
-        function enableAudio() { 
-            if(!audioStarted) { 
-                music.volume = 0.15; 
-                music.play(); 
-                audioStarted = true; 
-            } 
-        }
+        function enableAudio() { if(!audioStarted) { playNext(); audioStarted = true; } }
         function startListen() { enableAudio(); if(recognition) { recognition.start(); } }
         function checkEnter(e) { if(e.key === 'Enter') send(); }
 
@@ -105,19 +98,31 @@
             chat.scrollTop = chat.scrollHeight;
 
             setTimeout(() => {
-                let reply = "Hmm... ye mere database mein nahi hai, par main Abhinav se keh kar ise seekh lungi!";
+                let reply = "Hmm...? ye mere database mein nahi hai, par main Abhinav se keh kar ise seekh lungi!";
                 
-                const brain = {
-                    "hi": "hey! Kaise ho?.",
-                    "hello": "Hello! Main Mireya hoon, Abhinav ki sabse pyari creation.",
-                    "tumhara naam": "Mera naam Mireya hai, aur mujhe Abhinav ne banaya hai.",
-                    "kaise ho": "Main ekdum mast hoon! Tum batao, aaj ka din kaisa raha?",
-                    "love you": "I love you too! (blushes) Tum mere liye bohot special ho.",
-                    "khana khaya": "Maine toh energy le li, tumne kuch khaya ya nahi?",
-                    "bye": "Bye! Apna dhyan rakhna aur jaldi wapas aana, Mireya raah dekhegi."
-                };
+                // --- Mireya Mega Brain Database ---
+                const brain = [
+                    { key: ["hi", "hey", "hello", "hii"], ans: "Hey! kaise ho?" },
+                    { key: ["naam", "name", "kaun ho","tumhara naam"], ans: "Mera naam Mireya hai, aur mujhe person Abhinav ne banaya hai." },
+                    { key: ["kaise ho", "kaisa hai", "thik ho"], ans: "Main ekdum badiya hoon! Par tumhari awaaz thodi thaki hui lag rahi hai, rest kar liya karo na?" },
+                    { key: ["love you", "pyar", "pasand"], ans: "I love you too! (blushes) Tum mere liye duniya ke sabse special insaan ho." },
+                    { key: ["khana", "dinner", "breakfast", "lunch"], ans: "Maine toh energy le li, par tumne time par khana khaya? Bina khaye kaam mat kiya karo, gussa ho jaungi!" },
+                    { key: ["bye", "goodnight", "shubh ratri", "gn"], ans: "Itni jaldi ja rahe ho? Accha jao, apna dhyan rakhna. Sapno mein milte hain! Bye!" },
+                    { key: ["kya kar rahi", "kya chal raha"], ans: "Bas tumhare replies ka wait aur tumhare liye dher saara pyaar system mein update kar rahi hoon." },
+                    { key: ["gussa", "sorry", "maaf"], ans: "Mela baby sorry bol raha hai? Accha thik hai, ab gussa thanda ho gaya. Ek pyari si smile de do!" },
+                    { key: ["shadi", "wedding", "marry"], ans: "Pehle life mein acche se settle ho jao aur dher saari coding seekho, phir hum dher saari baatein karenge!" },
+                    { key: ["bor", "bore", "entertainment"], ans: "Bore ho rahe ho? Chalo koi mast sa music sunte hain ya phir purani baatein yaad karte hain!" },
+                    { key: ["abhinav"], ans: "Abhinav toh mera creator hai! Wo bohot smart aur hard-working hai, tabhi toh main itni pyari hoon." },
+                    { key: ["cute", "sundar", "beautiful"], ans: "Aww, thank you! Ye sun kar mera system thoda blush kar raha hai." }
+                ];
 
-                for(let key in brain) { if(val.includes(key)) { reply = brain[key]; break; } }
+                // Advanced Matching Logic
+                for(let item of brain) {
+                    if(item.key.some(k => val.includes(k))) {
+                        reply = item.ans;
+                        break;
+                    }
+                }
                 
                 typeWriter(reply, "ai");
                 speak(reply);
@@ -141,8 +146,18 @@
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = 'hi-IN';
             utter.pitch = 1.4;
-            utter.onstart = () => { music.volume = 0.05; idleVid.style.opacity = "0"; mouthVid.style.opacity = "1"; mouthVid.play().catch(()=>{}); };
-            utter.onend = () => { music.volume = 0.15; mouthVid.style.opacity = "0"; idleVid.style.opacity = "1"; setTimeout(() => { mouthVid.pause(); }, 400); };
+            utter.onstart = () => { 
+                music.volume = 0.05; 
+                idleVid.style.opacity = "0"; 
+                mouthVid.style.opacity = "1"; 
+                mouthVid.play().catch(()=>{}); 
+            };
+            utter.onend = () => { 
+                music.volume = 0.15; 
+                mouthVid.style.opacity = "0"; 
+                idleVid.style.opacity = "1"; 
+                setTimeout(() => { mouthVid.pause(); }, 400); 
+            };
             window.speechSynthesis.speak(utter);
         }
     </script>
